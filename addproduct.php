@@ -1,33 +1,31 @@
 <?php   
-    include("../sss/dbconfig.php");
+    include("dbconfig.php");
     if(isset($_POST['add'])){
         $filename = $_FILES['product_image']['name'];
         $temploc = $_FILES['product_image']['tmp_name'];
         $dir = "img/";
         $target = $dir.$filename;
-        $type = strtolower(basename(pathinfo($temploc,PATHINFO_EXTENSION)));
+        echo $type = strtolower(pathinfo($filename,PATHINFO_EXTENSION));
         $types = ["jpg", "jpeg", "png", "gif"];
         if(!in_array($type,$types)){
-            echo "<script>alert('Invalid image type') window.history.back()</script>";
+            echo "<script>alert('Invalid image type'); window.history.back()</script>";
         }
         else{
             if(!file_exists($target)){
                 move_uploaded_file($temploc,$target);
             }
-        }
-        $product_name = $_POST['product_name'];
-        $product_price = $_POST['product_price'];
+            $product_name = $_POST['product_name'];
+            $product_price = $_POST['product_price'];
 
-        $insert = $pdo->prepare("INSERT INTO products(product_name, product_price, product_img) VALUES(:name, :price, :img)");
-        $insert->execute([
-            ":name" => $product_name,
-            ":price" => $product_price,
-            ":img" => $target,
-        ]);
-        if($insert){
-            echo "
-                <script>alert('product inserted') window.location.href='index.php'</script>
-            ";
+            $insert = $pdo->prepare("INSERT INTO products(product_name, product_price, product_image) VALUES(:name, :price, :img)");
+            $insert->execute([
+                ":name" => $product_name,
+                ":price" => $product_price,
+                ":img" => $target,
+            ]);
+            if($insert){
+                echo "<script>alert('Product inserted'); window.location.href='index.php';</script>";
+            }
         }
     }
 ?>
@@ -58,10 +56,11 @@
                 <label for="productPrice" class="form-label">Product Price</label>
                 <input type="number" class="form-control" id="productPrice" name="product_price" required>
             </div>
-
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary" name = "add">Add Product</button>
+            <div class="row justify-content-between">
+                <a href="index.php" class = "btn btn-danger col-md-3">Back</a>
+                <button type="submit" class="btn btn-primary col-md-3" name = "add">Add Product</button>
             </div>
+            
         </form>
     </div>
 

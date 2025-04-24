@@ -67,7 +67,7 @@ $products = $fetch->fetchAll();
         <?php foreach ($products as $product): ?>
             <div class="col-md-4">
                     <a href="view.php" class="card product-card">
-                        <img src="<?= htmlspecialchars($product['product_img']) ?>" class="card-img-top product-image" alt="<?= htmlspecialchars($product['product_name']) ?>">
+                        <img src="<?= htmlspecialchars($product['product_image']) ?>" class="card-img-top product-image" alt="<?= htmlspecialchars($product['product_name']) ?>">
                         <div class="card-body text-center">
                             <h5 class="card-title"><?= htmlspecialchars($product['product_name']) ?></h5>
                             <p class="card-text">₱<?= number_format($product['product_price'], 2) ?></p>
