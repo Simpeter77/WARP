@@ -1,82 +1,86 @@
-<?php
-include "dbconfig.php";
+<?php 
+    session_start();
+    include "dbconfig.php";
+    include "style.php";
 
-$fetch = $pdo->prepare("SELECT * FROM products");
-$fetch->execute();
-$products = $fetch->fetchAll();
+    if(isset($_SESSION["USER"])){
+        $user_session = $_SESSION['USER'];
+        if($user_session['user_role'] == "Admin"){
+            header("location: Admin/");
+        }
+        else{
+            header("location: Users/");
+        }
+    }
+
+    if(isset($_POST['login'])){
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+
+        $fetch_user = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+        $fetch_user->execute([":username" => $username]);
+
+        if($fetch_user->rowCount()<1){
+            echo "
+                <script>
+                    alert('Login Failed');
+                </script>
+            ";
+        }
+        else{
+            $user = $fetch_user->fetch();
+            if($user['user_role'] == "Admin"){
+                if($user['user_password'] == $password){
+                    $_SESSION['USER'] = $user;
+                    header("location: Admin/");
+                }
+                else{
+                    echo "
+                        <script>
+                            alert('Login Failed');
+                        </script>
+                    ";
+                }
+            }
+            else{
+                if($user['user_password'] == md5($password)){
+                    $_SESSION['USER'] = $user;
+                    header("location: Users/");
+                }
+                else{
+                    echo "
+                        <script>
+                            alert('Login Failed');
+                        </script>
+                    ";
+                }
+
+            }
+        }
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        h1, h2 {
-            color: #007BFF;
-        }
-
-        .product-card {
-            border-radius: 10px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .product-card:hover {
-            transform: scale(1.05);
-        }
-
-        .product-image {
-            height: 200px;
-            object-fit: cover;
-        }
-
-        .total-amount {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: #28a745;
-        }
-    </style>
+    <title>Login - Miras</title>
 </head>
 <body>
-<form method="POST">
-<div class="float-right">
-    <a class="text-decoration-none" href="addproduct.php">Add Product</a>
-</div>
-<div class="container my-4">
-    <a class="row g-4">
-        <h1 class="text-center">MIRA'S</h1>
-        <?php foreach ($products as $product): ?>
-            <div class="col-md-4">
-                    <a href="view.php" class="card product-card">
-                        <img src="<?= htmlspecialchars($product['product_image']) ?>" class="card-img-top product-image" alt="<?= htmlspecialchars($product['product_name']) ?>">
-                        <div class="card-body text-center">
-                            <h5 class="card-title"><?= htmlspecialchars($product['product_name']) ?></h5>
-                            <p class="card-text">₱<?= number_format($product['product_price'], 2) ?></p>
-                        </div>
-                    </a>
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <form method="POST" class="w-100" style="max-width: 400px;">
+            <h1 class="text-center mb-4">Welcome to Mira's</h1>
+            <h2 class="text-center mb-4">Login</h2>
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter Username" required>
             </div>
-        <?php endforeach; ?>
-    </a>
-</div>
-</form>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter Password" required>
+            </div>
+            <button name="login" class="btn btn-primary w-100">Login</button>
+        </form>
+    </div>
 </body>
 </html>
