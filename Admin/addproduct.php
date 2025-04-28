@@ -42,11 +42,12 @@ if(isset($_POST['add'])){
         $product_name = $_POST['product_name'];
         $product_price = $_POST['product_price'];
 
-        $insert = $pdo->prepare("INSERT INTO products(product_name, product_price, product_image) VALUES(:name, :price, :img)");
+        $insert = $pdo->prepare("INSERT INTO products(product_name, product_price, product_image, product_status) VALUES(:name, :price, :img, :status)");
         $insert->execute([
             ":name" => $product_name,
             ":price" => $product_price,
             ":img" => $filename,
+            ":status" => "Available"
         ]);
         if($insert){
             echo "<script>alert('Product inserted'); window.location.href='index.php';</script>";

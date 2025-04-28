@@ -28,6 +28,7 @@ $product_details = $fetch_product_details->fetch();
 if(isset($_POST['update'])){
     $product_name = $_POST['product_name'];
     $product_price = $_POST['product_price'];
+    $product_status = $_POST['product_status'];
 
     if(isset($_FILES['product_image']) && $_FILES['product_image']['name'] != ''){
         $filename = $_FILES['product_image']['name'];
@@ -52,18 +53,20 @@ if(isset($_POST['update'])){
             }
             move_uploaded_file($temploc, $target);
         }
-        $update_product = $pdo->prepare("UPDATE products SET product_name = :name, product_price = :price, product_image = :img WHERE product_id = :product_id");
+        $update_product = $pdo->prepare("UPDATE products SET product_name = :name, product_price = :price, product_status = :product_status, product_image = :img WHERE product_id = :product_id");
         $update_product->execute([
             ":name" => $product_name,
             ":price" => $product_price,
+            ":product_status" => $product_status,
             ":img" => $filename,
             ":product_id" => $url_id,
         ]);
     } else {
-        $update_product = $pdo->prepare("UPDATE products SET product_name = :name, product_price = :price WHERE product_id = :product_id");
+        $update_product = $pdo->prepare("UPDATE products SET product_name = :name, product_price = :price, product_status = :product_status WHERE product_id = :product_id");
         $update_product->execute([
             ":name" => $product_name,
             ":price" => $product_price,
+            ":product_status" => $product_status,
             ":product_id" => $url_id,
         ]);
     }
@@ -119,7 +122,28 @@ if(isset($_POST['update'])){
                 <label for="productName" class="form-label">Product Name</label>
                 <input type="text" class="form-control" id="productName" name="product_name" value="<?= $product_details['product_name'] ?>" required>
             </div>
-
+            <?php if($product_details['product_status']=="Available"):?>
+                <div class="mb-4">
+                    <label class="form-label">Product Status</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="product_status" id="available" value="Available" <?= ($product_details['product_status'] == "Available") ? "checked" : "" ?>>
+                        <label class="form-check-label" for="available">
+                            Available
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="product_status" id="unavailable" value="Unavailable" <?= ($product_details['product_status'] == "Unavailable") ? "checked" : "" ?>>
+                        <label class="form-check-label" for="unavailable">
+                            Unavailable
+                        </label>
+                    </div>
+                </div>
+            <?php else:?>
+                <label for="">Available</label>
+                <input type="radio" value = "Unavailable" name = "product_status">
+                <label for="">Unavailable</label>
+                <input type="radio" value = "Unavailable" checked name = "product_status">
+            <?php endif; ?>
             <div class="mb-4">
                 <label for="productPrice" class="form-label">Product Price</label>
                 <input type="number" class="form-control" id="productPrice" name="product_price" value="<?= $product_details['product_price'] ?>" required>

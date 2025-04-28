@@ -56,6 +56,7 @@ $products = $fetch->fetchAll();
     <a href="adduser.php" class="btn btn-primary">Add a user</a>
     <a href="table.php" class="btn btn-warning">Table View</a>
     <a href="index.php" class="btn btn-warning">Shop View</a>
+    <a href="sales.php" class="btn btn-warning">Sales View</a>
 </div>
 
 <div class="container my-4">
