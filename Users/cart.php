@@ -77,7 +77,7 @@ if(isset($_POST['clear_cart'])){
                     $total += $subtotal;
                 ?>
                     <tr>
-                        <td><img src="../<?= htmlspecialchars($item['product_image']) ?>" width="80"></td>
+                        <td><img src="../img/<?= htmlspecialchars($item['product_image']) ?>" width="80"></td>
                         <td><?= htmlspecialchars($item['product_name']) ?></td>
                         <td>₱<?= number_format($item['product_price'], 2) ?></td>
                         <td>

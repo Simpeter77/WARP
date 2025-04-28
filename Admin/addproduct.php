@@ -14,13 +14,13 @@ if(isset($_SESSION['USER'])){
         header("location: ../Users/");
     }
 }
-#end of 
+#end of essesntials
 
 
 if(isset($_POST['add'])){
     $filename = $_FILES['product_image']['name'];
     $temploc = $_FILES['product_image']['tmp_name'];
-    $dir = "img/";
+    $dir = "../img/";
     $target = $dir.$filename;
     $type = strtolower(pathinfo($filename,PATHINFO_EXTENSION));
     $types = ["jpg", "jpeg", "png", "gif"];
@@ -28,9 +28,17 @@ if(isset($_POST['add'])){
         echo "<script>alert('Invalid image type'); window.history.back()</script>";
     }
     else{
-        if(!file_exists($target)){
-            move_uploaded_file($temploc,$target);
+        if(file_exists($target)){
+            $counter = 1;
+            $file_base = pathinfo($filename, PATHINFO_FILENAME);
+            do {
+                $new_filename = $file_base . "($counter)." . $type;
+                $target = $dir . $new_filename;
+                $counter++;
+            } while (file_exists($target));
+            $filename = $new_filename;
         }
+        move_uploaded_file($temploc,$target);
         $product_name = $_POST['product_name'];
         $product_price = $_POST['product_price'];
 
@@ -38,7 +46,7 @@ if(isset($_POST['add'])){
         $insert->execute([
             ":name" => $product_name,
             ":price" => $product_price,
-            ":img" => $target,
+            ":img" => $filename,
         ]);
         if($insert){
             echo "<script>alert('Product inserted'); window.location.href='index.php';</script>";
@@ -60,7 +68,7 @@ if(isset($_POST['add'])){
         <form action="" method="post" enctype="multipart/form-data">
             <div class="mb-4">
                 <label for="productImage" class="form-label">Upload Product Image</label>
-                <input type="file" class="form-control" id="productImage" name="product_image">
+                <input type="file" class="form-control" id="productImage" name="product_image" required>
             </div>
 
             <div class="mb-4">
@@ -75,10 +83,10 @@ if(isset($_POST['add'])){
             </div>
             <div class="row justify-content-between">
                 <div class="col-auto">
-                    <a href="index.php" class="btn btn-danger">Back</a>
+                    <button type="submit" class="btn btn-success" name="add">Add Product</button>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary" name="add">Add Product</button>
+                    <a href="index.php" class="btn btn-danger">Back</a>
                 </div>
             </div>
             

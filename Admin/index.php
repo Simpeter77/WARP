@@ -24,7 +24,10 @@ if (isset($_POST['Snacks'])) {
     $filter = "Meal";
 } elseif (isset($_POST['Drinks'])) {
     $filter = "Drink";
+} elseif (isset($_POST['All'])) {
+    $filter = ""; // No filter, show all products
 }
+
 
 if ($filter) {
     $condition = "%" . $filter . "%";
@@ -44,11 +47,15 @@ $products = $fetch->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - Miras</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 <div class="container d-flex justify-content-end gap-2 mb-3">
-    <a href="addproduct.php" class="btn btn-success">Add a product</a>
+<a href="addproduct.php" class="btn btn-success">Add a product</a>
     <a href="adduser.php" class="btn btn-primary">Add a user</a>
+    <a href="table.php" class="btn btn-warning">Table View</a>
+    <a href="index.php" class="btn btn-warning">Shop View</a>
 </div>
 
 <div class="container my-4">
@@ -75,17 +82,31 @@ $products = $fetch->fetchAll();
     </form>
 
     <div class="row">
-        <?php foreach ($products as $product): ?>
-            <div class="col-md-4 mt-4">
-                <a href="view.php" class="card product-card text-decoration-none">
-                    <img src="../<?= htmlspecialchars($product['product_image']) ?>" class="card-img-top product-image" alt="<?= htmlspecialchars($product['product_name']) ?>">
-                    <div class="card-body text-center">
-                        <h5 class="card-title"><?= htmlspecialchars($product['product_name']) ?></h5>
-                        <p class="card-text">₱<?= number_format($product['product_price'], 2) ?></p>
-                    </div>
-                </a>
+    <?php if($fetch->rowCount()<1):?>
+        <center><h2>No Product Found</h2></center>
+    <?php endif?>
+    <?php foreach ($products as $product): ?>
+        <div class="col-md-4 mt-4">
+            <div class="card product-card position-relative">
+                <div class="dropdown position-absolute top-0 end-0 m-2">
+                <button class="border-0 bg-transparent p-0 text-white outline-button" type="button" id="dropdownMenuButton<?= htmlspecialchars($product['product_id']) ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 30px;">
+                    &#x22EE;
+                </button>
+
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton<?= $product['product_id'] ?>">
+                        <li><a class="dropdown-item text-primary" href="edit.php?id=<?= $product['product_id'] ?>">Edit</a></li>
+                        <li><a class="dropdown-item text-danger" href="delete.php?id=<?= $product['product_id'] ?>" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a></li>
+                    </ul>
+                </div>
+                <img src="../img/<?= htmlspecialchars($product['product_image']) ?>" class="card-img-top product-image" alt="<?= htmlspecialchars($product['product_name']) ?>">
+                <div class="card-body text-center">
+                    <h5 class="card-title"><?= htmlspecialchars($product['product_name']) ?></h5>
+                    <p class="card-text">₱<?= number_format($product['product_price'], 2) ?></p>
+                </div>
             </div>
-        <?php endforeach; ?>
+        </div>
+    <?php endforeach; ?>
+
     </div>
 </div>
 <div class="d-flex justify-content-center mt-4">

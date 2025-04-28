@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tbody>
                     <?php foreach ($cart as $item): ?>
                         <tr>
-                            <td><img src="../<?= htmlspecialchars($item['product_image']) ?>" width="80" alt="<?= htmlspecialchars($item['product_name']) ?>"></td>
+                            <td><img src="../img/<?= htmlspecialchars($item['product_image']) ?>" width="80" alt="<?= htmlspecialchars($item['product_name']) ?>"></td>
                             <td><?= htmlspecialchars($item['product_name']) ?></td>
                             <td>₱<?= number_format($item['product_price'], 2) ?></td>
                             <td><?= $item['quantity'] ?></td>

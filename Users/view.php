@@ -48,7 +48,7 @@ if (!$product) {
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card mb-4">
-                <img src="../<?= htmlspecialchars($product['product_image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['product_name']) ?>">
+                <img src="../img/<?= htmlspecialchars($product['product_image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['product_name']) ?>">
                 <div class="card-body">
                     <h3 class="card-title"><?= htmlspecialchars($product['product_name']) ?></h3>
                     <p class="card-text">₱<?= number_format($product['product_price'], 2) ?></p>

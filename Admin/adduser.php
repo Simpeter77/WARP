@@ -61,8 +61,8 @@ if(isset($_POST['add'])){
                 <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" id="confirmpassword" required>
             </div>
             <div class="row justify-content-between">
-                <button id="adduser" name="add" class="btn btn-primary col-md-3">Add User</button>
-                <a href="../" class="btn btn-secondary ms-2 col-md-3">Back</a>
+                <button id="adduser" name="add" class="btn btn-primary col-auto">Add User</button>
+                <a href="../" class="btn btn-danger ms-2 col-auto">Back</a>
             </div>
         </form>
     </div>
