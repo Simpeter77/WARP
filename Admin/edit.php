@@ -1,21 +1,6 @@
 <?php   
-# Essentials
-session_start();
-include "../dbconfig.php";
-include "../style.php";
+include "adminsession.php";
 
-# Sessions
-if(!isset($_SESSION['USER'])){
-    header("location: logout.php");
-}
-
-if(isset($_SESSION['USER'])){
-    $user_session = $_SESSION['USER'];
-    if($user_session['user_role'] != "Admin"){
-        header("location: ../Users/");
-    }
-}
-# End of essentials
 
 // URL ID from GET
 $url_id = $_GET['id'];
@@ -40,6 +25,7 @@ if(isset($_POST['update'])){
 
         if(!in_array($type, $types)){
             echo "<script>alert('Invalid image type'); window.history.back()</script>";
+            exit;
         } else {
             if(file_exists($target)){
                 $counter = 1;
@@ -53,6 +39,7 @@ if(isset($_POST['update'])){
             }
             move_uploaded_file($temploc, $target);
         }
+
         $update_product = $pdo->prepare("UPDATE products SET product_name = :name, product_price = :price, product_status = :product_status, product_image = :img WHERE product_id = :product_id");
         $update_product->execute([
             ":name" => $product_name,
@@ -73,9 +60,9 @@ if(isset($_POST['update'])){
 
     if($update_product){
         echo "<script>alert('Product Update Successful'); window.location.href='index.php';</script>";
+        exit;
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -109,8 +96,8 @@ if(isset($_POST['update'])){
     <div class="container mt-5">
         <h2 class="text-center mb-4">Edit Product</h2>
         <form action="" method="post" enctype="multipart/form-data">
-            <div class="image-container">
-                <img id="productImagePreview" src="../img/<?php echo $product_details['product_image']?>" alt="<?= $product_details['product_image']?>" class="img-fluid product-image">
+            <div class="image-container mb-4">
+                <img id="productImagePreview" src="../img/<?php echo $product_details['product_image']?>" alt="<?= htmlspecialchars($product_details['product_image']) ?>" class="img-fluid product-image">
             </div>
 
             <div class="mb-4">
@@ -120,33 +107,24 @@ if(isset($_POST['update'])){
 
             <div class="mb-4">
                 <label for="productName" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="productName" name="product_name" value="<?= $product_details['product_name'] ?>" required>
+                <input type="text" class="form-control" id="productName" name="product_name" value="<?= htmlspecialchars($product_details['product_name']) ?>" required>
             </div>
-            <?php if($product_details['product_status']=="Available"):?>
-                <div class="mb-4">
-                    <label class="form-label">Product Status</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="product_status" id="available" value="Available" <?= ($product_details['product_status'] == "Available") ? "checked" : "" ?>>
-                        <label class="form-check-label" for="available">
-                            Available
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="product_status" id="unavailable" value="Unavailable" <?= ($product_details['product_status'] == "Unavailable") ? "checked" : "" ?>>
-                        <label class="form-check-label" for="unavailable">
-                            Unavailable
-                        </label>
-                    </div>
+
+            <div class="mb-4">
+                <label class="form-label">Product Status</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="product_status" id="available" value="Available" <?= ($product_details['product_status'] == "Available") ? "checked" : "" ?>>
+                    <label class="form-check-label" for="available">Available</label>
                 </div>
-            <?php else:?>
-                <label for="">Available</label>
-                <input type="radio" value = "Unavailable" name = "product_status">
-                <label for="">Unavailable</label>
-                <input type="radio" value = "Unavailable" checked name = "product_status">
-            <?php endif; ?>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="product_status" id="unavailable" value="Unavailable" <?= ($product_details['product_status'] == "Unavailable") ? "checked" : "" ?>>
+                    <label class="form-check-label" for="unavailable">Unavailable</label>
+                </div>
+            </div>
+
             <div class="mb-4">
                 <label for="productPrice" class="form-label">Product Price</label>
-                <input type="number" class="form-control" id="productPrice" name="product_price" value="<?= $product_details['product_price'] ?>" required>
+                <input type="number" class="form-control" id="productPrice" name="product_price" value="<?= htmlspecialchars($product_details['product_price']) ?>" required>
             </div>
 
             <div class="row justify-content-between">
@@ -160,7 +138,7 @@ if(isset($_POST['update'])){
         </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script>
         function previewImage() {
             const file = document.getElementById("productImage").files[0];

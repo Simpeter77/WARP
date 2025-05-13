@@ -1,38 +1,29 @@
 <?php 
-#essentials
-session_start();
-include "../dbconfig.php";
-include "../style.php";
-#sessions
-if(!isset($_SESSION['USER'])){
-    header("location: logout.php");
-}
+include "adminsession.php";
 
-if(isset($_SESSION['USER'])){
-    $user_session = $_SESSION['USER'];
-    if($user_session['user_role'] != "Admin"){
-        header("location: ../Users/");
-    }
-}
-#end of essentials
 
 if(isset($_POST['add'])){
     $username = $_POST['username'];
     $password = md5($_POST['password']);
-
-    $insert_user = $pdo->prepare("INSERT INTO users(username, user_password, user_role) VALUES(:username, :password, :role)");
-    $insert_user->execute([
-        ":username" =>$username,
-        ":password" => $password,
-        ":role" => "User",
-    ]);
-    if($insert_user){
-        echo" 
-            <script>
-                alert('Added User {$username}');
-                window.location.href='../';
-            </script>
-        ";
+    try{
+        $pdo->beginTransaction();
+        $insert_user = $pdo->prepare("INSERT INTO users(username, user_password, user_role) VALUES(:username, :password, :role)");
+        $insert_user->execute([
+            ":username" =>$username,
+            ":password" => $password,
+            ":role" => "User",
+        ]);
+        if($insert_user){
+            echo" 
+                <script>
+                    alert('Added User {$username}');
+                    window.location.href='./manageuser.php';
+                </script>
+            ";
+        }
+    }catch(Exception $e){
+        $pdo->rollBack();
+        echo $e->getMessage();
     }
 }
 
@@ -62,7 +53,7 @@ if(isset($_POST['add'])){
             </div>
             <div class="row justify-content-between">
                 <button id="adduser" name="add" class="btn btn-primary col-auto">Add User</button>
-                <a href="../" class="btn btn-danger ms-2 col-auto">Back</a>
+                <a href="./manageuser.php" class="btn btn-danger ms-2 col-auto">Back</a>
             </div>
         </form>
     </div>

@@ -1,21 +1,6 @@
 <?php 
-# Essentials
-session_start();
-include "../dbconfig.php";
-include "../style.php";
+include "adminsession.php";
 
-# Sessions
-if(!isset($_SESSION['USER'])){
-    header("location: logout.php");
-}
-
-if(isset($_SESSION['USER'])){
-    $user_session = $_SESSION['USER'];
-    if($user_session['user_role'] != "Admin"){
-        header("location: ../Users/");
-    }
-}
-# End of essentials
 // for single deletion
 if(isset($_GET['id'])){
     $url_id = $_GET['id'];
@@ -34,10 +19,12 @@ if(isset($_POST['delete_selected'])){
         $multi_delete->execute($product_ids);
         if($multi_delete){
             header("location: table.php");
+            exit();
         }
     }
     else{
         header("location: table.php");
+        exit();
     }
 }
  

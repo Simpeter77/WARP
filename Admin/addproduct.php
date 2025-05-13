@@ -1,21 +1,5 @@
 <?php   
-#essentials
-session_start();
-include "../dbconfig.php";
-include "../style.php";
-#sessions
-if(!isset($_SESSION['USER'])){
-    header("location: logout.php");
-}
-
-if(isset($_SESSION['USER'])){
-    $user_session = $_SESSION['USER'];
-    if($user_session['user_role'] != "Admin"){
-        header("location: ../Users/");
-    }
-}
-#end of essesntials
-
+include "adminsession.php";
 
 if(isset($_POST['add'])){
     $filename = $_FILES['product_image']['name'];
@@ -87,7 +71,7 @@ if(isset($_POST['add'])){
                     <button type="submit" class="btn btn-success" name="add">Add Product</button>
                 </div>
                 <div class="col-auto">
-                    <a href="index.php" class="btn btn-danger">Back</a>
+                    <a href="table.php" class="btn btn-danger">Back</a>
                 </div>
             </div>
             

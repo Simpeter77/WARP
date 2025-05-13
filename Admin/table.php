@@ -1,21 +1,5 @@
 <?php
-#essentials
-session_start();
-include "../dbconfig.php";
-include "../style.php";
-#sessions
-if(!isset($_SESSION['USER'])){
-    header("location: logout.php");
-}
-
-if(isset($_SESSION['USER'])){
-    $user_session = $_SESSION['USER'];
-    if($user_session['user_role'] != "Admin"){
-        header("location: ../Users/");
-    }
-}
-#end of essentials
-
+include "adminsession.php";
 $filter = "";
 
 if (isset($_POST['Snacks'])) {
@@ -49,84 +33,127 @@ $products = $fetch->fetchAll();
     <title>Products - Miras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        table-layout: auto;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        white-space: normal; /* Allow wrapping */
+        padding: 0.5rem;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .btn-sm, .btn {
+        white-space: nowrap;
+    }
+
+    input[type="checkbox"] {
+        transform: scale(1.2);
+    }
+</style>
+
+
+
 </head>
 <body>
-<div class="container d-flex justify-content-end gap-2 mb-3">
-    <a href="addproduct.php" class="btn btn-success">Add a product</a>
-    <a href="adduser.php" class="btn btn-primary">Add a user</a>
-    <a href="table.php" class="btn btn-warning">Table View</a>
-    <a href="index.php" class="btn btn-warning">Shop View</a>
-    <a href="sales.php" class="btn btn-warning">Sales View</a>
+<!-- Header Buttons -->
+<div class="container my-4 d-flex justify-content-between flex-wrap gap-2">
+    <div class="d-flex flex-wrap gap-2">
+        <a href="index.php" class="btn btn-success btn-custom">Sales View</a>
+        <a href="history.php" class="btn btn-info text-white btn-custom">Sales History</a>
+        <a href="manageuser.php" class="btn btn-primary btn-custom">Manage User</a>
+        <a href="table.php" class="btn btn-warning btn-custom">All Products</a>
+        <a href="shopview.php" class="btn btn-danger btn-custom">Shop View</a>
+    </div>
+    <div>
+        <a href="../logout.php" class="btn btn-dark btn-custom">Logout</a>
+    </div>
 </div>
 
 <div class="container my-4">
     <h1 class="text-center fw-bold text-primary mb-4">MIRA'S</h1>
     <form method="POST">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-5 rounded shadow-sm">
-            <div class="container-fluid">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="All">All</button>
-                    </li>
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="Snacks">Snacks</button>
-                    </li>
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="Meals">Meals</button>
-                    </li>
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="Drinks">Drinks</button>
-                    </li>
-                </ul>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light rounded shadow-sm mb-4">
+            <div class="container-fluid justify-content-center">
+                <div class="row w-100">
+                    <div class="col-3">
+                        <button type="submit" name="All" class="btn btn-primary w-100">All</button>
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" name="Snacks" class="btn btn-primary w-100">Snacks</button>
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" name="Meals" class="btn btn-primary w-100">Meals</button>
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" name="Drinks" class="btn btn-primary w-100">Drinks</button>
+                    </div>
+                </div>
             </div>
         </nav>
     </form>
 
     <div class="table-responsive">
-        <form action="delete.php" method = "post">
-            <button name = "delete_selected" class = "btn btn-danger mb-2 float-end">Delete Selected</button>
-            <table class="table table-bordered table-striped">
-                <?php if($fetch->rowCount()<1):?>
-                    <center><h2>No Product Found</h2></center>
-                <?php else:?>
-                    <thead class="thead-dark">
+        <form action="delete.php" method="post">
+            <?php if (count($products) === 0): ?>
+                <div class="text-center my-4">
+                    <h2>No Product Found</h2>
+                    <a href="addproduct.php" class="btn btn-success mt-2">Add Product</a>
+                </div>
+            <?php else: ?>
+                <div class="row justify-content-between mb-3">
+                    <div class="col-auto">
+                        <a href="addproduct.php" class="btn btn-success">Add Product</a>
+                    </div>
+                    <div class="col-auto">
+                        <button name="delete_selected" class="btn btn-danger">Delete Selected</button>
+                    </div>
+                </div>
+
+                <table class="table table-bordered align-middle">
+                    <thead class="table-dark text-center">
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                            <th>
-                                <button type="button" class="btn btn-warning btn-sm mx-auto" id="select-all">Select All</button>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Actions</th>
+                            <th scope="col">
+                                <button type="button" class="btn btn-warning btn-sm" id="select-all">Select All</button>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($products AS $product):?>
+                        <?php foreach ($products as $product): ?>
                             <tr>
-                                <td><?= $product['product_id']?></td>
-                                <td><?= $product['product_name']?></td>
-                                <td><?= $product['product_price']?></td>
-                                <td><?= $product['product_status']?></td>
-                                <td>
-                                    <a href="edit.php?id=<?= $product['product_id']?>" class="btn btn-primary btn-sm">Edit</a>
+                                <td class="text-center"><?= $product['product_id'] ?></td>
+                                <td><?= htmlspecialchars($product['product_name']) ?></td>
+                                <td class="text-center">₱<?= number_format($product['product_price'], 2) ?></td>
+                                <td class="text-center"><?= $product['product_status'] ?></td>
+                                <td class="text-center">
+                                    <a href="edit.php?id=<?= $product['product_id'] ?>" class="btn btn-primary btn-sm">Edit</a>
                                 </td>
-                                <td>
-                                    <input type="checkbox" class="delete-checkbox" name = "product_ids[]" value = "<?= $product['product_id']?>">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input delete-checkbox" name="product_ids[]" value="<?= $product['product_id'] ?>">
                                 </td>
                             </tr>
-                        <?php endforeach;?>
+                        <?php endforeach; ?>
                     </tbody>
-                <?php endif?>
-            </table>
+                </table>
+            <?php endif; ?>
         </form>
     </div>
 </div>
-
-<div class="d-flex justify-content-center mt-4">
-    <a href="../logout.php" class="btn btn-danger">Logout</a>
-</div>
-
 <script>
     const selectAll = document.getElementById('select-all');
     selectAll.addEventListener("click", () => {

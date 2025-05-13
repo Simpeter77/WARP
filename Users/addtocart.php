@@ -42,7 +42,7 @@ if (isset($_POST['addtocart'])) {
         }
     }
 
-    header("location: cart.php?added=1");
+    header("location: index.php?");
     exit;
 }
 ?>

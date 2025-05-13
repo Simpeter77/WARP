@@ -1,118 +1,258 @@
 <?php
-#essentials
-session_start();
-include "../dbconfig.php";
-include "../style.php";
-#sessions
-if(!isset($_SESSION['USER'])){
-    header("location: ../logout.php");
-}
+include "adminsession.php";
 
-if(isset($_SESSION['USER'])){
-    $user_session = $_SESSION['USER'];
-    if($user_session['user_role'] != "Admin"){
-        header("location: ../Users/");
+// Database connection assumed as $pdo
+
+// --- Daily Sales (last 7 days) ---
+$daily_sales = $pdo->query("
+    SELECT sales_date, total_sales 
+    FROM sales 
+    WHERE sales_date >= CURDATE() - INTERVAL 6 DAY 
+    ORDER BY sales_date ASC
+")->fetchAll();
+
+// --- Weekly Sales in current month (monthly chart input) ---
+$startOfMonth = date('Y-m-01');
+$endOfMonth = date('Y-m-t');
+
+$start = new DateTime($startOfMonth);
+$end = new DateTime($endOfMonth);
+$end->modify('+1 day');
+
+$interval = new DateInterval('P1W');
+$period = new DatePeriod($start, $interval, $end);
+
+$monthly_labels = [];
+$monthly_sales = [];
+
+$monthly_labels = [];
+$monthly_sales = [];
+
+$weekNumber = 1;
+foreach ($period as $weekStart) {
+    $weekEnd = clone $weekStart;
+    $weekEnd->modify('+6 days');
+
+    // Ensure we don't go past the end of the current month
+    if ($weekEnd > new DateTime($endOfMonth)) {
+        $weekEnd = new DateTime($endOfMonth);
     }
-}
-#end of essentials
 
-$filter = "";
+    // Format: Week 1 (May 01–May 07)
+    $label = "Week $weekNumber (" . $weekStart->format('M d') . '–' . $weekEnd->format('M d') . ')';
+    $monthly_labels[] = $label;
 
-if (isset($_POST['Snacks'])) {
-    $filter = "Snack";
-} elseif (isset($_POST['Meals'])) {
-    $filter = "Meal";
-} elseif (isset($_POST['Drinks'])) {
-    $filter = "Drink";
-} elseif (isset($_POST['All'])) {
-    $filter = ""; // No filter, show all products
-}
+    // Get total sales for this week range
+    $stmt = $pdo->prepare("
+        SELECT SUM(total_sales) 
+        FROM sales 
+        WHERE sales_date BETWEEN ? AND ?
+    ");
+    $stmt->execute([$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+    $sum = $stmt->fetchColumn() ?: 0;
 
-
-if ($filter) {
-    $condition = "%" . $filter . "%";
-    $fetch = $pdo->prepare("SELECT * FROM products WHERE product_name LIKE :condition");
-    $fetch->execute([':condition' => $condition]);
-} else {
-    $fetch = $pdo->prepare("SELECT * FROM products");
-    $fetch->execute();
+    $monthly_sales[] = $sum;
+    $weekNumber++;
 }
 
-$products = $fetch->fetchAll();
+
+// --- Yearly Sales (fixed 12 months) ---
+$yearly_raw = $pdo->query("
+    SELECT 
+        MONTH(sales_date) AS month_num, 
+        SUM(total_sales) AS total 
+    FROM sales 
+    WHERE YEAR(sales_date) = YEAR(CURDATE()) 
+    GROUP BY month_num
+")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$yearly_sales = [];
+for ($i = 1; $i <= 12; $i++) {
+    $yearly_sales[] = isset($yearly_raw[$i]) ? $yearly_raw[$i] : 0;
+}
+
+// --- KPIs ---
+$today = date('Y-m-d');
+$yesterday = date('Y-m-d', strtotime('-1 day'));
+
+$today_sales = $pdo->prepare("SELECT total_sales FROM sales WHERE sales_date = ?");
+$today_sales->execute([$today]);
+$today_sales = $today_sales->fetchColumn() ?: 0;
+
+$yesterday_sales = $pdo->prepare("SELECT total_sales FROM sales WHERE sales_date = ?");
+$yesterday_sales->execute([$yesterday]);
+$yesterday_sales = $yesterday_sales->fetchColumn() ?: 0;
+
+$weekly_avg = $pdo->query("
+    SELECT AVG(total_sales) 
+    FROM sales 
+    WHERE sales_date >= CURDATE() - INTERVAL 7 DAY
+")->fetchColumn();
+$weekly_avg = round($weekly_avg, 2);
+
+$best_day = $pdo->query("SELECT * FROM sales ORDER BY total_sales DESC LIMIT 1")->fetch();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Sales - Miras</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products - Miras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-<div class="container d-flex justify-content-end gap-2 mb-3">
-<a href="addproduct.php" class="btn btn-success">Add a product</a>
-    <a href="adduser.php" class="btn btn-primary">Add a user</a>
-    <a href="table.php" class="btn btn-warning">Table View</a>
-    <a href="index.php" class="btn btn-warning">Shop View</a>
-    <a href="sales.php" class="btn btn-warning">Sales View</a>
+<body class="bg-light">
+
+<!-- Header Buttons -->
+<div class="container my-4 d-flex justify-content-between flex-wrap gap-2">
+    <div class="d-flex flex-wrap gap-2">
+        <a href="index.php" class="btn btn-success btn-custom">Sales View</a>
+        <a href="history.php" class="btn btn-info text-white btn-custom">Sales History</a>
+        <a href="manageuser.php" class="btn btn-primary btn-custom">Manage User</a>
+        <a href="table.php" class="btn btn-warning btn-custom">All Products</a>
+        <a href="shopview.php" class="btn btn-danger btn-custom">Shop View</a>
+    </div>
+    <div>
+        <a href="../logout.php" class="btn btn-dark btn-custom">Logout</a>
+    </div>
 </div>
 
-<div class="container my-4">
-    <h1 class="text-center fw-bold text-primary mb-4">MIRA'S</h1>
-    <form method="POST">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-5 rounded shadow-sm">
-            <div class="container-fluid">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="All">All</button>
-                    </li>
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="Snacks">Snacks</button>
-                    </li>
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="Meals">Meals</button>
-                    </li>
-                    <li class="nav-item nav-item-spacing">
-                        <button class="btn btn-outline-primary nav-link" name="Drinks">Drinks</button>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    </form>
+<!-- Title -->
+<div class="container text-center mb-5">
+    <h1 class="fw-bold text-primary">MIRA'S SALES DASHBOARD</h1>
+</div>
 
-    <div class="row">
-    <?php if($fetch->rowCount()<1):?>
-        <center><h2>No Product Found</h2></center>
-    <?php endif?>
-    <?php foreach ($products as $product): ?>
-        <div class="col-md-4 mt-4">
-            <div class="card product-card position-relative">
-                <div class="dropdown position-absolute top-0 end-0 m-2">
-                <button class="border-0 bg-transparent p-0 text-white outline-button" type="button" id="dropdownMenuButton<?= htmlspecialchars($product['product_id']) ?>" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 30px;">
-                    &#x22EE;
-                </button>
-
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton<?= $product['product_id'] ?>">
-                        <li><a class="dropdown-item text-primary" href="edit.php?id=<?= $product['product_id'] ?>">Edit</a></li>
-                        <li><a class="dropdown-item text-danger" href="delete.php?id=<?= $product['product_id'] ?>" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a></li>
-                    </ul>
-                </div>
-                <img src="../img/<?= htmlspecialchars($product['product_image']) ?>" class="card-img-top product-image" alt="<?= htmlspecialchars($product['product_name']) ?>">
-                <div class="card-body text-center">
-                    <h5 class="card-title"><?= htmlspecialchars($product['product_name']) ?></h5>
-                    <p class="card-text">₱<?= number_format($product['product_price'], 2) ?></p>
+<!-- KPIs -->
+<div class="container mb-5">
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card border-primary text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Sales</h5>
+                    <p class="card-text fs-4 text-primary">₱ <?= number_format($today_sales, 2) ?></p>
                 </div>
             </div>
         </div>
-    <?php endforeach; ?>
-
+        <div class="col-md-3">
+            <div class="card border-success text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Yesterday's Sales</h5>
+                    <p class="card-text fs-4 text-success">₱ <?= number_format($yesterday_sales, 2) ?></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Weekly Average</h5>
+                    <p class="card-text fs-4 text-warning">₱ <?= number_format($weekly_avg, 2) ?></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Best Day</h5>
+                    <p class="card-text fs-6 text-danger">
+                        <?= $best_day['sales_date'] ?><br>
+                        ₱ <?= number_format($best_day['total_sales'], 2) ?>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-<div class="d-flex justify-content-center mt-4">
-    <a href="../logout.php" class="btn btn-danger">Logout</a>
+
+<!-- Charts -->
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Daily Chart -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Daily Sales (Last 7 Days)</h5>
+                    <canvas id="dailyChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly (Monthly) Chart -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Weekly Sales (This Month)</h5>
+                    <canvas id="monthlyChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yearly Chart -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Yearly Sales</h5>
+                    <canvas id="yearlyChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Chart Scripts -->
+<script>
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+const yearlyCtx = document.getElementById('yearlyChart').getContext('2d');
+
+// Daily Chart
+new Chart(dailyCtx, {
+    type: 'bar',
+    data: {
+        labels: <?= json_encode(array_column($daily_sales, 'sales_date')) ?>,
+        datasets: [{
+            label: 'Daily Sales',
+            data: <?= json_encode(array_column($daily_sales, 'total_sales')) ?>,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+});
+
+// Weekly Sales (monthly view)
+new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: <?= json_encode($monthly_labels) ?>,
+        datasets: [{
+            label: 'Weekly Sales',
+            data: <?= json_encode($monthly_sales) ?>,
+            backgroundColor: 'rgba(255, 206, 86, 0.7)',
+            borderColor: 'rgba(255, 206, 86, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+});
+
+// Yearly Chart
+new Chart(yearlyCtx, {
+    type: 'bar',
+    data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+            label: 'Monthly Sales',
+            data: <?= json_encode($yearly_sales) ?>,
+            backgroundColor: 'rgba(153, 102, 255, 0.7)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+});
+</script>
 
 </body>
 </html>
