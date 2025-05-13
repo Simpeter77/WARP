@@ -33,39 +33,37 @@ $products = $fetch->fetchAll();
     <title>Products - Miras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
 
-<style>
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
+        table {
+            width: 100%;
+            table-layout: auto;
+            border-collapse: collapse;
+        }
 
-    table {
-        width: 100%;
-        table-layout: auto;
-        border-collapse: collapse;
-    }
+        th, td {
+            white-space: normal; /* Allow wrapping */
+            padding: 0.5rem;
+            vertical-align: middle;
+            text-align: center;
+        }
 
-    th, td {
-        white-space: normal; /* Allow wrapping */
-        padding: 0.5rem;
-        vertical-align: middle;
-        text-align: center;
-    }
+        .btn-sm, .btn {
+            white-space: nowrap;
+        }
 
-    .btn-sm, .btn {
-        white-space: nowrap;
-    }
-
-    input[type="checkbox"] {
-        transform: scale(1.2);
-    }
-</style>
-
-
-
+        input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+    </style>
 </head>
 <body>
+
 <!-- Header Buttons -->
 <div class="container my-4 d-flex justify-content-between flex-wrap gap-2">
     <div class="d-flex flex-wrap gap-2">
@@ -82,87 +80,59 @@ $products = $fetch->fetchAll();
 
 <div class="container my-4">
     <h1 class="text-center fw-bold text-primary mb-4">MIRA'S</h1>
-    <form method="POST">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light rounded shadow-sm mb-4">
-            <div class="container-fluid justify-content-center">
-                <div class="row w-100">
-                    <div class="col-3">
-                        <button type="submit" name="All" class="btn btn-primary w-100">All</button>
-                    </div>
-                    <div class="col-3">
-                        <button type="submit" name="Snacks" class="btn btn-primary w-100">Snacks</button>
-                    </div>
-                    <div class="col-3">
-                        <button type="submit" name="Meals" class="btn btn-primary w-100">Meals</button>
-                    </div>
-                    <div class="col-3">
-                        <button type="submit" name="Drinks" class="btn btn-primary w-100">Drinks</button>
-                    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light rounded shadow-sm mb-4">
+        <div class="container-fluid justify-content-center">
+            <div class="row w-100">
+                <div class="col-3">
+                    <button value="" class="btn btn-primary w-100" onclick="filtertable(this.value)">All</button>
+                </div>
+                <div class="col-3">
+                    <button value="Snack" class="btn btn-primary w-100" onclick="filtertable(this.value)">Snacks</button>
+                </div>
+                <div class="col-3">
+                    <button value="Meal" class="btn btn-primary w-100" onclick="filtertable(this.value)">Meals</button>
+                </div>
+                <div class="col-3">
+                    <button value="Drink" class="btn btn-primary w-100" onclick="filtertable(this.value)">Drinks</button>
                 </div>
             </div>
-        </nav>
-    </form>
+        </div>
+    </nav>
 
-    <div class="table-responsive">
-        <form action="delete.php" method="post">
-            <?php if (count($products) === 0): ?>
-                <div class="text-center my-4">
-                    <h2>No Product Found</h2>
-                    <a href="addproduct.php" class="btn btn-success mt-2">Add Product</a>
-                </div>
-            <?php else: ?>
-                <div class="row justify-content-between mb-3">
-                    <div class="col-auto">
-                        <a href="addproduct.php" class="btn btn-success">Add Product</a>
-                    </div>
-                    <div class="col-auto">
-                        <button name="delete_selected" class="btn btn-danger">Delete Selected</button>
-                    </div>
-                </div>
+    <div id="product-table"></div> <!-- Dynamic products will be loaded here -->
 
-                <table class="table table-bordered align-middle">
-                    <thead class="table-dark text-center">
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Actions</th>
-                            <th scope="col">
-                                <button type="button" class="btn btn-warning btn-sm" id="select-all">Select All</button>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($products as $product): ?>
-                            <tr>
-                                <td class="text-center"><?= $product['product_id'] ?></td>
-                                <td><?= htmlspecialchars($product['product_name']) ?></td>
-                                <td class="text-center">₱<?= number_format($product['product_price'], 2) ?></td>
-                                <td class="text-center"><?= $product['product_status'] ?></td>
-                                <td class="text-center">
-                                    <a href="edit.php?id=<?= $product['product_id'] ?>" class="btn btn-primary btn-sm">Edit</a>
-                                </td>
-                                <td class="text-center">
-                                    <input type="checkbox" class="form-check-input delete-checkbox" name="product_ids[]" value="<?= $product['product_id'] ?>">
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </form>
-    </div>
 </div>
+
 <script>
-    const selectAll = document.getElementById('select-all');
-    selectAll.addEventListener("click", () => {
-        let checkboxes = document.querySelectorAll('.delete-checkbox');
-        let isChecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = isChecked;
+    window.onload = function() {
+    filtertable("");
+    };
+
+
+    function filtertable(filter){
+        let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState == 4 && xhr.status == 200){
+                document.getElementById('product-table').innerHTML = xhr.responseText;
+                addSelectAll();
+            }
+        }
+        xhr.open("GET", "products.php?filter=" + filter, true);
+        xhr.send();
+    }
+
+    function addSelectAll(){
+        const selectAll = document.getElementById('select-all');
+        selectAll.addEventListener("click", () => {
+            let checkboxes = document.querySelectorAll('.delete-checkbox');
+            let isChecked = Array.from(checkboxes).some(checkbox => !checkbox.checked);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
         });
-    });
+    }
 </script>
 </body>
 </html>
+

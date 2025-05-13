@@ -5,7 +5,7 @@ include "../dbconfig.php";
 include "../style.php";
 #sessions
 if(!isset($_SESSION['USER'])){
-    header("location: logout.php");
+    header("location: ../logout.php");
 }
 
 if(isset($_SESSION['USER'])){

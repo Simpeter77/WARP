@@ -34,7 +34,7 @@ if(isset($_POST['add'])){
             ":status" => "Available"
         ]);
         if($insert){
-            echo "<script>alert('Product inserted'); window.location.href='index.php';</script>";
+            echo "<script>alert('Product inserted'); window.location.href='table.php';</script>";
         }
     }
 }

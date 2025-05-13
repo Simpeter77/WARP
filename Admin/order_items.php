@@ -1,7 +1,7 @@
 <?php 
 include "adminsession.php";
 $order_id = $_GET['orderid'];
-$fetch_order_details = $pdo->prepare("SELECT products.product_name, order_items.* 
+$fetch_order_details = $pdo->prepare("SELECT products.product_name, products.product_price, order_items.* 
 FROM order_items 
 LEFT JOIN products ON order_items.product_id = products.product_id 
 WHERE order_id = :order_id");
@@ -14,6 +14,8 @@ $order_details = $fetch_order_details->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body style="font-family: 'Arial', sans-serif; background-color: #f4f4f4; padding: 20px;">
 
@@ -29,8 +31,8 @@ $order_details = $fetch_order_details->fetchAll();
         <?php else: ?>
             <?php foreach ($order_details as $item): ?>
                 <div class="receipt-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-                    <span style="display: inline-block; width: 25%;"><?= htmlspecialchars($item['product_name']) ?></span>
-                    <span style="display: inline-block; width: 25%;">Qty: <?= htmlspecialchars($item['quantity']) ?></span>
+                    <span style="display: inline-block; width: 24%;"><?= htmlspecialchars($item['product_name']) ?></span>
+                    <span style="display: inline-block; width: 25%;">₱ <?= number_format($item['product_price'], 2) ?> x <?= htmlspecialchars($item['quantity']) ?></span>
                     <span style="display: inline-block; width: 25%;">₱ <?= number_format($item['subtotal'], 2) ?></span>
                 </div>
             <?php endforeach; ?>

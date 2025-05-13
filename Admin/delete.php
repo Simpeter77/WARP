@@ -27,5 +27,28 @@ if(isset($_POST['delete_selected'])){
         exit();
     }
 }
+
+if(isset($_POST['delete_selected_users'])){
+    if(isset($_POST['user_ids']) && count($_POST['user_ids']) > 0){
+        $user_ids = $_POST['user_ids'];
+        $placeholder = implode(",",array_fill(0,count($user_ids),"?"));
+        try{
+            $pdo->beginTransaction();
+            $multi_delete = $pdo->prepare("DELETE FROM users WHERE user_id IN ($placeholder)");
+            $multi_delete->execute($user_ids);
+            $pdo->commit();
+            if($multi_delete){
+                header("location: manageuser.php");
+                exit();
+            }
+        }catch(Exception $e){
+            echo $e->getMessage();
+        }
+    }
+    else{
+        header("location: manageuser.php");
+        exit();
+    }
+}
  
 ?>

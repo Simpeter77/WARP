@@ -59,7 +59,7 @@ if(isset($_POST['update'])){
     }
 
     if($update_product){
-        echo "<script>alert('Product Update Successful'); window.location.href='index.php';</script>";
+        echo "<script>alert('Product Update Successful'); window.location.href='table.php';</script>";
         exit;
     }
 }
@@ -129,7 +129,7 @@ if(isset($_POST['update'])){
 
             <div class="row justify-content-between">
                 <div class="col-auto">
-                    <a href="index.php" class="btn btn-danger">Back</a>
+                    <a href="table.php" class="btn btn-danger">Back</a>
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary" name="update">Update Product</button>

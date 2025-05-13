@@ -1,7 +1,7 @@
 <?php 
 include "adminsession.php";
 
-$sales = $pdo->query("SELECT * FROM sales ORDER BY sales_date ASC")->fetchAll();
+$sales = $pdo->query("SELECT * FROM sales ORDER BY sales_date DESC")->fetchAll();
 
 // Today's date and today's sales (from orders table)
 $now = date("Y-m-d");
@@ -15,28 +15,19 @@ $today = $fetch_today->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales History</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .container {
             max-height: 40vh;
             overflow-y: auto;
         }
-
         .element-class {
             overflow: scroll;
             -ms-overflow-style: none;  
             scrollbar-width: none;
         }
-
         .element-class::-webkit-scrollbar {
             display: none;  
         }
-
-        th {
-            background-color: #f8f9fa;
-            text-align: center;
-        }
-
         td {
             text-align: center;
         }
@@ -45,6 +36,10 @@ $today = $fetch_today->fetchAll();
             font-size: 1.25rem;
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
 </head>
 <body class="bg-light">
 
@@ -73,10 +68,10 @@ $today = $fetch_today->fetchAll();
                 <table class="table table-hover align-middle table-bordered">
                     <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>Order Amount</th>
-                            <th>Order Date</th>
-                            <th>Actions</th>
+                            <th style = 'background-color: #f8f9fa; text-align: center;'>Order ID</th>
+                            <th style = 'background-color: #f8f9fa; text-align: center;'>Order Amount</th>
+                            <th style = 'background-color: #f8f9fa; text-align: center;'>Order Date</th>
+                            <th style = 'background-color: #f8f9fa; text-align: center;'>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,7 +85,11 @@ $today = $fetch_today->fetchAll();
                                 <td><?= htmlspecialchars($row['order_id']) ?></td>
                                 <td>₱ <?= number_format($row['order_total_amount'], 2) ?></td>
                                 <td><?= htmlspecialchars($row['order_date']) ?></td>
-                                <td><button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="<?= $row['order_id'] ?>"><i class="fa fa-eye"></i> View</button></td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="<?= $row['order_id'] ?>">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
