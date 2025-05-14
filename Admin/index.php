@@ -86,9 +86,10 @@ $yesterday_sales = $yesterday_sales->fetchColumn() ?: 0;
 $weekly_avg = $pdo->query("
     SELECT AVG(total_sales) 
     FROM sales 
-    WHERE sales_date >= CURDATE() - INTERVAL 7 DAY
+    WHERE DATE(sales_date) >= CURDATE() - INTERVAL 7 DAY
 ")->fetchColumn();
-$weekly_avg = round($weekly_avg, 2);
+
+$weekly_avg = $weekly_avg !== null ? round($weekly_avg, 2) : 0;
 
 $best_day = $pdo->query("SELECT * FROM sales ORDER BY total_sales DESC LIMIT 1")->fetch();
 ?>
@@ -101,98 +102,146 @@ $best_day = $pdo->query("SELECT * FROM sales ORDER BY total_sales DESC LIMIT 1")
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .nav-row {
+            background-color: #ffffff;
+            border-radius: 12px;
+        }
+
+        .nav-button {
+            padding: 0.45rem 1.1rem;
+            background-color: #f2f2f2;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-button:hover,
+        .nav-button:focus {
+            background-color: #e0e0e0;
+            color: #111;
+            transform: translateY(-1px);
+        }
+
+        .nav-button.active {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+
+        .logout {
+            background-color: #ffe5e5;
+            color: #c0392b;
+        }
+
+        .logout:hover,
+        .logout:focus {
+            background-color: #ffd6d6;
+            color: #922b21;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
-<!-- Header Buttons -->
-<div class="container my-4 d-flex justify-content-between flex-wrap gap-2">
-    <div class="d-flex flex-wrap gap-2">
-        <a href="index.php" class="btn btn-success btn-custom">Sales View</a>
-        <a href="history.php" class="btn btn-info text-white btn-custom">Sales History</a>
-        <a href="manageuser.php" class="btn btn-primary btn-custom">Manage User</a>
-        <a href="table.php" class="btn btn-warning btn-custom">All Products</a>
-        <a href="shopview.php" class="btn btn-danger btn-custom">Shop View</a>
+<!-- Header Navigation -->
+<div class="container my-4 mt-0">
+  <div class="nav-row d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded">
+    
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <a href="index.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">Sales View</a>
+      <a href="history.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'history.php' ? 'active' : '' ?>">Sales History</a>
+      <a href="manageuser.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'manageuser.php' ? 'active' : '' ?>">Manage User</a>
+      <a href="table.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'table.php' ? 'active' : '' ?>">All Products</a>
+      <a href="shopview.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'shopview.php' ? 'active' : '' ?>">Shop View</a>
     </div>
+
     <div>
-        <a href="../logout.php" class="btn btn-dark btn-custom">Logout</a>
+      <a href="../logout.php" class="nav-button logout">Logout</a>
     </div>
+
+  </div>
 </div>
 
-<!-- Title -->
-<div class="container text-center mb-5">
-    <h1 class="fw-bold text-primary">MIRA'S SALES DASHBOARD</h1>
-</div>
 
-<!-- KPIs -->
-<div class="container mb-5">
-    <div class="row g-4">
-        <div class="col-md-3">
-            <div class="card border-primary text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Today's Sales</h5>
-                    <p class="card-text fs-4 text-primary">₱ <?= number_format($today_sales, 2) ?></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-success text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Yesterday's Sales</h5>
-                    <p class="card-text fs-4 text-success">₱ <?= number_format($yesterday_sales, 2) ?></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-warning text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Weekly Average</h5>
-                    <p class="card-text fs-4 text-warning">₱ <?= number_format($weekly_avg, 2) ?></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-danger text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Best Day</h5>
-                    <p class="card-text fs-6 text-danger">
-                        <?= $best_day['sales_date'] ?><br>
-                        ₱ <?= number_format($best_day['total_sales'], 2) ?>
-                    </p>
-                </div>
-            </div>
-        </div>
+<div class="container">
+    <!-- Title -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-primary">MIRA'S SALES DASHBOARD</h1>
     </div>
-</div>
-
-<!-- Charts -->
-<div class="container mb-5">
-    <div class="row g-4">
-        <!-- Daily Chart -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title text-center">Daily Sales (Last 7 Days)</h5>
-                    <canvas id="dailyChart" height="200"></canvas>
+    <!-- KPIs -->
+    <div class="mb-5">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-md-3">
+                <div class="card border-primary text-center h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Today's Sales</h5>
+                        <p class="card-text fs-4 text-primary">₱ <?= number_format($today_sales, 2) ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success text-center h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Yesterday's Sales</h5>
+                        <p class="card-text fs-4 text-success">₱ <?= number_format($yesterday_sales, 2) ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning text-center h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Week Average</h5>
+                        <p class="card-text fs-4 text-warning">₱ <?= number_format($weekly_avg, 2) ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-danger text-center h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Best Day</h5>
+                        <p class="card-text fs-6 text-danger">
+                            <?= $best_day['sales_date'] ?><br>
+                            ₱ <?= number_format($best_day['total_sales'], 2) ?>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Weekly (Monthly) Chart -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title text-center">Weekly Sales (This Month)</h5>
-                    <canvas id="monthlyChart" height="200"></canvas>
+    </div>
+
+    <!-- Charts -->
+    <div class="mb-5">
+        <div class="row g-4">
+            <!-- Daily Chart -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Daily Sales (Last 7 Days)</h5>
+                        <canvas id="dailyChart" height="200"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Yearly Chart -->
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title text-center">Yearly Sales</h5>
-                    <canvas id="yearlyChart" height="200"></canvas>
+            <!-- Weekly (Monthly) Chart -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Weekly Sales (This Month)</h5>
+                        <canvas id="monthlyChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yearly Chart -->
+            <div class="col-12 d-flex justify-content-center">
+                <div class="card w-100" style="max-width: 900px;">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Yearly Sales</h5>
+                        <canvas id="yearlyChart" height="150"></canvas>
+                    </div>
                 </div>
             </div>
         </div>

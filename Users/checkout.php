@@ -87,13 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {date_default_timezone_set('Asia/Manil
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-
-<div class="container d-flex justify-content-end gap-2 mb-3 mt-3">
-    <a href="index.php" class="btn btn-warning">Shop View</a>
-    <a href="cart.php" class="btn btn-primary">Cart</a>
-    <a href="../logout.php" class="btn btn-danger">Logout</a>
-</div>
-
 <div class="container my-5">
     <h1 class="text-center fw-bold text-primary mb-4">Checkout</h1>
 

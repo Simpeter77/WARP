@@ -119,7 +119,7 @@ if(isset($_POST['clear_cart'])){
                 <div class="mt-3 mt-md-0">
                     <button type="submit" name="clear_cart" class="btn btn-warning">Clear Cart</button>
                     <button type="submit" name="update_cart" class="btn btn-primary">Update Cart</button>
-                    <a href="index.php" class="btn btn-secondary">Continue Shopping</a>
+                    <a href="index.php" class="btn btn-secondary">Continue Ordering</a>
                     <a href="checkout.php" class="btn btn-success">Checkout</a>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 <?php 
-include "adminsession.php";
+include "usersession.php";
 
 $sales = $pdo->query("SELECT * FROM sales ORDER BY sales_date DESC")->fetchAll();
 
@@ -66,7 +66,7 @@ $today = $fetch_today->fetchAll();
         }
 
         .table-container {
-            max-height: 300px;
+            max-height: 80vh;
             overflow-y: auto;
             overflow-x: auto;
             display: block;
@@ -102,27 +102,21 @@ $today = $fetch_today->fetchAll();
 </head>
 <body class="bg-light">
 
-
 <!-- Header Navigation -->
-<div class="container my-4 mt-0">
-  <div class="nav-row d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded ">
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-      <a href="index.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">Sales View</a>
-      <a href="history.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'history.php' ? 'active' : '' ?>">Sales History</a>
-      <a href="manageuser.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'manageuser.php' ? 'active' : '' ?>">Manage User</a>
-      <a href="table.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'table.php' ? 'active' : '' ?>">All Products</a>
-      <a href="shopview.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'shopview.php' ? 'active' : '' ?>">Shop View</a>
+    <div class="container my-4 mt-0">
+        <div class="nav-row d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded">
+            
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="index.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">Shop</a>
+            <a href="history.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'history.php' ? 'active' : '' ?>">History</a>
+            </div>
+
+            <div>
+            <a href="../logout.php" class="nav-button logout">Logout</a>
+            </div>
+
+        </div>
     </div>
-
-    <div>
-      <a href="../logout.php" class="nav-button logout">Logout</a>
-    </div>
-
-  </div>
-</div>
-
-
-
 <div class="container">
     <!-- Today's Orders Table -->
     <div class="table-container mb-5">
@@ -166,44 +160,6 @@ $today = $fetch_today->fetchAll();
             </div>
         </div>
     </div>
-
-    <!-- All Sales Table -->
-    <div class="table-container mb-5">
-        <div class="card border-primary">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">All Sales Records</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive element-class">
-                    <table class="table table-hover align-middle table-bordered">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Total Sales</th>
-                                <th>Sales Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($sales as $row): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($row['sales_id']) ?></td>
-                                <td>₱ <?= number_format($row['total_sales'], 2) ?></td>
-                                <td><?= htmlspecialchars($row['sales_date']) ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                            <?php if (empty($sales)): ?>
-                            <tr>
-                                <td colspan="3" class="text-center">No sales data available.</td>
-                            </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>   
-</div>
-
 
 <!-- Modal for Order Details -->
 <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">

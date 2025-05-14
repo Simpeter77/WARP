@@ -90,10 +90,63 @@ $products = $fetch->fetchAll();
                 height: 180px;
             }
         }
+        .nav-row {
+            background-color: #ffffff;
+            border-radius: 12px;
+        }
+
+        .nav-button {
+            padding: 0.45rem 1.1rem;
+            background-color: #f2f2f2;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-button:hover,
+        .nav-button:focus {
+            background-color: #e0e0e0;
+            color: #111;
+            transform: translateY(-1px);
+        }
+
+        .nav-button.active {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+
+        .logout {
+            background-color: #ffe5e5;
+            color: #c0392b;
+        }
+
+        .logout:hover,
+        .logout:focus {
+            background-color: #ffd6d6;
+            color: #922b21;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Header Navigation -->
+    <div class="container my-4 mt-0">
+        <div class="nav-row d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded">
+            
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="index.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">Shop</a>
+            <a href="history.php" class="nav-button <?= basename($_SERVER['PHP_SELF']) == 'history.php' ? 'active' : '' ?>">History</a>
+            </div>
+
+            <div>
+            <a href="../logout.php" class="nav-button logout">Logout</a>
+            </div>
+
+        </div>
+    </div>
     <div class="container my-4">
         <h1 class="text-center fw-bold text-primary mb-4">MIRA'S</h1>
 
@@ -110,26 +163,26 @@ $products = $fetch->fetchAll();
         <?php endif; ?>
 
         <!-- Filter Buttons -->
-        <form method="POST">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light rounded shadow-sm mb-4">
-                <div class="container-fluid justify-content-center">
-                    <div class="row w-100">
-                        <div class="col-6 col-md-3 mb-2 mb-md-0">
-                            <button type="submit" name="All" class="btn btn-primary w-100">All</button>
-                        </div>
-                        <div class="col-6 col-md-3 mb-2 mb-md-0">
-                            <button type="submit" name="Snacks" class="btn btn-primary w-100">Snacks</button>
-                        </div>
-                        <div class="col-6 col-md-3 mb-2 mb-md-0">
-                            <button type="submit" name="Meals" class="btn btn-primary w-100">Meals</button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button type="submit" name="Drinks" class="btn btn-primary w-100">Drinks</button>
+            <form method="POST">
+                <nav class="navbar navbar-expand-lg navbar-light bg-white rounded mb-4">
+                    <div class="container-fluid justify-content-center">
+                        <div class="row w-100">
+                            <div class="col-3">
+                                <button type="submit" name="All" class="btn w-100 <?= $filter == "" ? 'btn-primary' : 'btn-secondary' ?>">All</button>
+                            </div>
+                            <div class="col-3">
+                                <button type="submit" name="Snacks" class="btn w-100 <?= $filter == "Snack" ? 'btn-primary' : 'btn-secondary' ?>">Snacks</button>
+                            </div>
+                            <div class="col-3">
+                                <button type="submit" name="Meals" class="btn w-100 <?= $filter == "Meal" ? 'btn-primary' : 'btn-secondary' ?>">Meals</button>
+                            </div>
+                            <div class="col-3">
+                                <button type="submit" name="Drinks" class="btn w-100 <?= $filter == "Drink" ? 'btn-primary' : 'btn-secondary' ?>">Drinks</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </nav>
-        </form>
+                </nav>
+            </form>
 
         <!-- Product Cards -->
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
@@ -147,11 +200,6 @@ $products = $fetch->fetchAll();
                 </div>
             <?php endforeach; ?>
         </div>
-    </div>
-
-    <!-- Logout Button -->
-    <div class="d-flex justify-content-center mt-4">
-        <a href="../logout.php" class="btn btn-danger">Logout</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

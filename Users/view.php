@@ -84,13 +84,13 @@ if (!$product) {
                         <p class="card-text">₱<?= number_format($product['product_price'], 2) ?></p>
 
                         <!-- Hidden Price Value for Calculation -->
-                        <input type="hidden" id="price" value="<?= number_format($product['product_price'], 2) ?>">
+                        <input type="hidden" id="price" value="<?= $product['product_price']?>">
 
                         <form action="addtocart.php" method="POST">
                             <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
 
                             <!-- Quantity Input Section -->
-                            <div class="mb-3">
+                            <div class="mb-3 align-self-center mx-auto">
                                 <label for="quantity" class="form-label">Quantity:</label>
                                 <div class="row align-items-center">
                                     <div class="col-auto">
@@ -105,13 +105,20 @@ if (!$product) {
                                 </div>
                                 <p id="subtotal" class="mt-2"></p>
                             </div>
-
-                            <!-- Add to Cart Button -->
-                            <button type="submit" class="btn btn-success w-100" name="addtocart">Add to Cart</button>
+                            <div class="row d-flex justify-content-between align-items-center">
+                                <div class="col-md-4">
+                                    <!-- Add to Cart Button -->
+                                    <button type="submit" class="btn btn-success w-100" name="addtocart">Add to Cart</button>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <!-- Back to Products Button -->
+                                        <a href="index.php" class="btn btn-secondary w-100">Back to Products</a>
+                                </div>
+                               
+                            </div>
+                            
                         </form>
-
-                        <!-- Back to Products Button -->
-                        <a href="index.php" class="btn btn-secondary w-100 mt-2">Back to Products</a>
                     </div>
                 </div>
             </div>
